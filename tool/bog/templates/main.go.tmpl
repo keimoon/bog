@@ -1,0 +1,29 @@
+package {{.PackageName}}
+
+import (
+	"github.com/keimoon/bog"
+	"time"
+)
+
+{{range .Files}}
+{{if .IsDir}}
+var {{.VarName}} = bog.NewBogFolder([]bog.File{{"{"}}{{range .Children}}{{.}},{{end}}{{"}"}}, &bog.FileInfo{
+        FileName:{{printf "%#v" .Stat.FileName}},
+	FileSize:{{printf "%#v" .Stat.FileSize}},
+        FileMode:{{printf "%#v" .Stat.FileMode}},
+	FileModTime:time.Unix({{.Stat.FileModTime.Unix}}, 0),
+})
+{{else}}
+var {{.VarName}} = bog.NewBogFile({{printf "%#v" .Data}}, &bog.FileInfo{
+	FileName:{{printf "%#v" .Stat.FileName}}, 
+	FileSize:{{printf "%#v" .Stat.FileSize}}, 
+	FileMode:{{printf "%#v" .Stat.FileMode}}, 
+	FileModTime:time.Unix({{.Stat.FileModTime.Unix}}, 0),
+})
+{{end}}
+{{end}}
+
+var {{.VarName}} = bog.NewArchive(map[string]bog.File{
+	{{range .Files}}{{printf "%#v" .Path}}: {{.VarName}},
+	{{end}}
+}, {{printf "%#v" .Dev}}, {{printf "%#v" .Root}})

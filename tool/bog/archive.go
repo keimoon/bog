@@ -181,8 +181,11 @@ func walk(root string, walkFn walkFunc, rules ignoreRules) error {
 }
 
 func loadTemplate(name string) (*template.Template, error) {
-	tmplFile := filepath.Join(os.Getenv("GOPATH"), "src", "github.com", "keimoon", "bog", "tool", "bog", "templates", name)
-	b, err := ioutil.ReadFile(tmplFile)
+	f, err := TemplatesArchive.Open("main.go.tmpl")
+	if err != nil {
+		return nil, err
+	}
+	b, err := ioutil.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}

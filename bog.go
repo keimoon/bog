@@ -3,7 +3,7 @@ package bog
 import (
 	"os"
 	"path/filepath"
-	//"strings"
+	"strings"
 )
 
 type Archive struct {
@@ -21,10 +21,11 @@ func NewArchive(files map[string]File, dev bool, root string) *Archive {
 }
 
 func (a *Archive) Open(name string) (File, error) {
+	name = strings.TrimLeft(name, "/")
 	if a.dev {
 		return os.Open(filepath.Join(a.root, name))
 	}
-	f, ok := a.files[name]
+	f, ok := a.files["/" + name]
 	if !ok {
 		return nil, &os.PathError{"open", name, errNotFound}
 	}
@@ -32,10 +33,11 @@ func (a *Archive) Open(name string) (File, error) {
 }
 
 func (a *Archive) Stat(name string) (fi os.FileInfo, err error) {
+	name =strings.TrimLeft(name, "/")
 	if a.dev {
 		return os.Stat(filepath.Join(a.root, name))
 	}
-	f, ok := a.files[name]
+	f, ok := a.files["/" + name]
 	if !ok {
 		return nil, &os.PathError{"stat", name, errNotFound}
 	}

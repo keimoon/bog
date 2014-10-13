@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
-	"regexp"
 	"flag"
 )
 
@@ -25,25 +23,6 @@ func Usage() {
 	fmt.Fprintf(os.Stderr, "%s [flags] (extract|e) file.go\n", os.Args[0])
 }
 
-var pkgRegex = regexp.MustCompile("[^a-zA-Z0-9\\-\\_]")
-func makePackageName(name string) string {
-	return pkgRegex.ReplaceAllString(strings.ToLower(name), "")
-}
-
-var filenameRegex = regexp.MustCompile("[^a-zA-Z0-9]")
-func makeFilename(name string) string {
-        return filenameRegex.ReplaceAllString(strings.ToLower(name), "")
-}
-
-func makeVariableName(name string) string {
-	return "v_" + filenameRegex.ReplaceAllString(strings.ToLower(name), "_")
-}
-
-var slugRegex = regexp.MustCompile("(\\s|-|_)+")
-func makePublicVariableName(name string) string {
-	return strings.Replace(strings.Title(slugRegex.ReplaceAllString(name, " ")), " ", "", -1)
-}
-
 func main() {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -52,7 +31,8 @@ func main() {
 	}
 	cwd = makePackageName(filepath.Base(cwd))
 	flag.Usage = Usage
-	flag.StringVar(&Options.PackageName, "p", cwd, "Package name")
+	flag.StringVar(&Options.PackageName, "p", cwd, "Change package name")
+	
 	flag.BoolVar(&Options.Dev, "d", false, "Enable development mode")
 	flag.Parse()
 	Args = flag.Args()

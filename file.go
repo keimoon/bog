@@ -3,6 +3,7 @@ package bog
 import (
 	"bytes"
 	"errors"
+	"io"
 	"os"
 	"time"
 )
@@ -82,6 +83,7 @@ func NewBogFolder(children []File, info os.FileInfo) File {
 
 func (f *bogFile) Close() error {
 	f.closed = true
+	f.off = 0
 	return nil
 }
 
@@ -116,7 +118,25 @@ func (f *bogFile) Readdir(n int) (fi []os.FileInfo, err error) {
 	if !f.stat.IsDir() {
 		return nil, &os.PathError{"readdirent", f.Name(), errInvalid}
 	}
-	return nil, nil
+	if f.off >= len(f.children) {
+		return nil, io.EOF
+	}
+	var children []File
+	if n < 0 || f.off+n >= len(f.children) {
+		children = f.children[f.off:]
+		f.off = len(f.children)
+	} else {
+		children = f.children[f.off : f.off+n]
+		f.off += n
+	}
+	for _, child := range children {
+		stat, err := child.Stat()
+		if err != nil {
+			return nil, err
+		}
+		fi = append(fi, stat)
+	}
+	return fi, nil
 }
 
 func (f *bogFile) Readdirnames(n int) (names []string, err error) {
@@ -126,7 +146,14 @@ func (f *bogFile) Readdirnames(n int) (names []string, err error) {
 	if !f.stat.IsDir() {
 		return nil, &os.PathError{"readdirent", f.Name(), errInvalid}
 	}
-	return nil, nil
+	children, err := f.Readdir(n)
+	if err != nil {
+		return nil, err
+	}
+	for _, child := range children {
+		names = append(names, child.Name())
+	}
+	return names, nil
 }
 
 func (f *bogFile) Seek(offset int64, whence int) (ret int64, err error) {

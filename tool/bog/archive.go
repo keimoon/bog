@@ -51,38 +51,51 @@ func Archive() int {
 	}
 	fileVars := []*FileVar{}
 	now := strconv.FormatInt(time.Now().Unix(), 10)
-	if stat.IsDir() {
-		err = walk(folder, func(path string, info os.FileInfo, children []string) error {
+	if !Options.Dev {
+		if stat.IsDir() {
+			err = walk(folder, func(path string, info os.FileInfo, children []string) error {
+				fileVar := &FileVar{
+					VarName: makeVariableName(now + "_" + path),
+					Path:    "/" + strings.TrimLeft(strings.TrimPrefix(path, folder), "/"),
+					Stat: &bog.FileInfo{
+						FileName:    info.Name(),
+						FileSize:    info.Size(),
+						FileMode:    info.Mode(),
+						FileModTime: info.ModTime(),
+					},
+				}
+				if info.IsDir() {
+					fileVar.IsDir = true
+					for _, child := range children {
+						fileVar.Children = append(fileVar.Children, makeVariableName(now+"_"+path+"_"+child))
+					}
+				} else {
+					b, err := ioutil.ReadFile(path)
+					if err != nil {
+						return err
+					}
+					fileVar.Data = b
+				}
+				fileVars = append(fileVars, fileVar)
+				return nil
+			}, ignoreRules{})
+			if err != nil {
+				fmt.Println(err)
+				return 1
+			}
+		} else {
 			fileVar := &FileVar{
-				VarName: makeVariableName(now + "_" + path),
-				Path:    "/" + strings.TrimLeft(strings.TrimPrefix(path, folder), "/"),
-				Stat: &bog.FileInfo{
-					FileName:    info.Name(),
-					FileSize:    info.Size(),
-					FileMode:    info.Mode(),
-					FileModTime: info.ModTime(),
-				},
+				VarName: makeVariableName(now + "_" + folder),
+				Path:    "/",
+				Stat:    stat,
 			}
-			if info.IsDir() {
-				fileVar.IsDir = true
-				for _, child := range children {
-					fileVar.Children = append(fileVar.Children, makeVariableName(now+"_"+path+"_"+child))
-				}
-			} else {
-				b, err := ioutil.ReadFile(path)
-				if err != nil {
-					return err
-				}
-				fileVar.Data = b
+			b, err := ioutil.ReadFile(folder)
+			if err != nil {
+				return 2
 			}
+			fileVar.Data = b
 			fileVars = append(fileVars, fileVar)
-			return nil
-		}, ignoreRules{})
-		if err != nil {
-			fmt.Println(err)
-			return 1
 		}
-	} else {
 	}
 	if !Options.isCwd {
 		err = os.MkdirAll(outputFolder, 0755)
@@ -103,13 +116,15 @@ func Archive() int {
 		Files       []*FileVar
 		Root        string
 		VarName     string
+		IsFile      bool
 		Dev         bool
 	}{
 		PackageName: Options.PackageName,
 		Files:       fileVars,
 		Root:        folder,
 		VarName:     varName,
-		Dev:         false,
+		IsFile:      !stat.IsDir(),
+		Dev:         Options.Dev,
 	}
 	err = mainTmpl.Execute(f, tmplData)
 	if err != nil {
@@ -123,7 +138,7 @@ type FileVar struct {
 	VarName  string
 	Path     string
 	IsDir    bool
-	Stat     *bog.FileInfo
+	Stat     os.FileInfo
 	Data     []byte
 	Children []string
 }

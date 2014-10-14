@@ -1,6 +1,7 @@
 package bog
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -72,6 +73,62 @@ func (a *Archive) ReadFile(name string) ([]byte, error) {
 	}
 	defer f.Close()
 	return ioutil.ReadAll(f)
+}
+
+func (a *Archive) Extract() error {
+	var outputPrefix = "."
+	if !a.isFile {
+		root := filepath.Base(a.root)
+		if root != "." && root != ".." {
+			err := os.RemoveAll(root)
+			if err != nil {
+				return err
+			}
+			outputPrefix = root
+		}
+	} else {
+		outputPrefix = filepath.Base(a.root)
+	}
+	for path, f := range a.files {
+		stat, err := f.Stat()
+		if err != nil {
+			return err
+		}
+		if !stat.IsDir() {
+			outputFilePath := filepath.Join(outputPrefix, path)
+			outputFolder := filepath.Dir(outputFilePath)
+			if outputFolder != "." {
+				err = os.MkdirAll(outputFolder, 0755)
+				if err != nil {
+					return err
+				}
+			}
+			newFile, err := os.Create(outputFilePath)
+			if err != nil {
+				return err
+			}
+			defer newFile.Close()
+			_, err = io.Copy(newFile, f)
+			if err != nil {
+				return err
+			}
+			err = newFile.Chmod(stat.Mode())
+			if err != nil {
+				return err
+			}
+		} else {
+			folder := filepath.Join(outputPrefix, path)
+			err = os.MkdirAll(folder, 0755)
+			if err != nil {
+				return err
+			}
+			err = os.Chmod(folder, stat.Mode())
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (a *Archive) formatName(name string) string {

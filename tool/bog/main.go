@@ -48,7 +48,7 @@ func main() {
 	case "archive", "a":
 		os.Exit(Archive())
 	case "extract", "e":
-		Extract()
+		os.Exit(Extract())
 	default:
 		Usage()
 	}

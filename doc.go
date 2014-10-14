@@ -37,6 +37,11 @@ To extract the data of archived source file to current directory:
 Or:
   bog e directory-archive.go
 
+Ignore files
+
+Bog supports the use of special file called .bogignore to make the generator ignore certain files
+or folders. It is nearly identical to .gitignore.
+
 Setting package name
 
 By default, bog will use current directory for package name in generated files. To change that, use -p switch:

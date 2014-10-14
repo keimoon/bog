@@ -50,6 +50,10 @@ Or:
 bog e directory-archive.go
 ```
 
+## Ignore files
+
+Bog supports the use of special file called _.bogignore_ to make the generator ignore certain files or folders. It is nearly identical to _.gitignore_.
+
 ## Setting package name
 
 By default, bog will use current directory for package name in generated files. To change that, use _-p switch_:

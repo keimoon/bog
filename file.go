@@ -15,6 +15,7 @@ var (
 	errNotFound          = errors.New("no such file or directory")
 )
 
+// File represents an open file in the archive.
 type File interface {
 	Close() error
 	Name() string
@@ -26,6 +27,7 @@ type File interface {
 	Stat() (fi os.FileInfo, err error)
 }
 
+// A FileInfo describes a file, and implements os.FileInfo interface.
 type FileInfo struct {
 	FileName    string
 	FileSize    int64
@@ -33,27 +35,33 @@ type FileInfo struct {
 	FileModTime time.Time
 }
 
+// Name returns base name of the file.
 func (fi *FileInfo) Name() string {
 	return fi.FileName
 }
 
+// Size returns length in bytes for regular files; system-dependent for others.
 func (fi *FileInfo) Size() int64 {
 	return fi.FileSize
 }
 
+// Mode returns file mode bits
 func (fi *FileInfo) Mode() os.FileMode {
 	return fi.FileMode
 }
 
+// ModTime returns modification time
 func (fi *FileInfo) ModTime() time.Time {
 	return fi.FileModTime
 }
 
+// IsDir is abbreviation for Mode().IsDir()
 func (fi *FileInfo) IsDir() bool {
 	return fi.FileMode.IsDir()
 }
 
-func (fu *FileInfo) Sys() interface{} {
+// Sys is always nil
+func (fi *FileInfo) Sys() interface{} {
 	return nil
 }
 
@@ -66,6 +74,7 @@ type bogFile struct {
 	closed   bool
 }
 
+// NewBogFile creates a File. Use internally by generator.
 func NewBogFile(data []byte, info os.FileInfo) File {
 	return &bogFile{
 		data: data,
@@ -74,6 +83,7 @@ func NewBogFile(data []byte, info os.FileInfo) File {
 	}
 }
 
+// NewBogFolder creates a File that represents a folder. Use internally by generator.
 func NewBogFolder(children []File, info os.FileInfo) File {
 	return &bogFile{
 		stat:     info,

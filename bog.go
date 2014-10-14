@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Archive is representation os archived folders/files in Go code.
 type Archive struct {
 	files  map[string]File
 	dev    bool
@@ -15,6 +16,7 @@ type Archive struct {
 	root   string
 }
 
+// NewArchive creates new Archive. This function is called by the generator.
 func NewArchive(files map[string]File, dev bool, isFile bool, root string) *Archive {
 	return &Archive{
 		files:  files,
@@ -24,12 +26,15 @@ func NewArchive(files map[string]File, dev bool, isFile bool, root string) *Arch
 	}
 }
 
+// SetRoot sets the root folder when using development mode.
 func (a *Archive) SetRoot(path string) {
 	if a.dev {
 		a.root = path
 	}
 }
 
+// Open opens the named file for reading. If successful, methods on the returned file can be used for reading.
+// If there is an error, it will be of type *PathError
 func (a *Archive) Open(name string) (File, error) {
 	name = a.formatName(name)
 	if a.dev {
@@ -42,6 +47,7 @@ func (a *Archive) Open(name string) (File, error) {
 	return f, nil
 }
 
+// Stat returns a FileInfo describing the named file. If there is an error, it will be of type *PathError.
 func (a *Archive) Stat(name string) (fi os.FileInfo, err error) {
 	name = a.formatName(name)
 	if a.dev {
@@ -54,18 +60,21 @@ func (a *Archive) Stat(name string) (fi os.FileInfo, err error) {
 	return f.Stat()
 }
 
-func (a *Archive) ReadDir(name string) ([]os.FileInfo, error) {
-	name = a.formatName(name)
+// ReadDir reads the directory named by dirname and returns a list of directory entries.
+func (a *Archive) ReadDir(dirname string) ([]os.FileInfo, error) {
+	dirname = a.formatName(dirname)
 	if a.dev {
-		return ioutil.ReadDir(filepath.Join(a.root, name))
+		return ioutil.ReadDir(filepath.Join(a.root, dirname))
 	}
-	f, ok := a.files["/"+name]
+	f, ok := a.files["/"+dirname]
 	if !ok {
-		return nil, &os.PathError{"open", name, errNotFound}
+		return nil, &os.PathError{"open", dirname, errNotFound}
 	}
 	return f.Readdir(-1)
 }
 
+// ReadFile reads the file named by filename and returns the contents. A successful call returns err == nil, not err == EOF. 
+// Because ReadFile reads the whole file, it does not treat an EOF from Read as an error to be reported.
 func (a *Archive) ReadFile(name string) ([]byte, error) {
 	f, err := a.Open(name)
 	if err != nil {
@@ -75,6 +84,7 @@ func (a *Archive) ReadFile(name string) ([]byte, error) {
 	return ioutil.ReadAll(f)
 }
 
+// Extract extracts the content of the archive to current folder.
 func (a *Archive) Extract() error {
 	var outputPrefix = "."
 	if !a.isFile {

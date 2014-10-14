@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+// Archive creates an archive from a folder or file
 func Archive() int {
 	if len(Args) <= 1 {
 		Usage()
@@ -134,6 +135,7 @@ func Archive() int {
 	return 0
 }
 
+// FileVar represents a file or folder
 type FileVar struct {
 	VarName  string
 	Path     string

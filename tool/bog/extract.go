@@ -13,6 +13,7 @@ import (
 	"strings"
 )
 
+// Extract extracts content of an archived go source file to current folder
 func Extract() int {
 	fset := token.NewFileSet()
 	sourceFile := Args[1]
@@ -48,7 +49,7 @@ func Extract() int {
 			if !ok {
 				continue
 			}
-			if strings.HasPrefix(varName, "v_") {
+			if strings.HasPrefix(varName, "vvv") {
 				var file bog.File
 				if selectorExpr.Sel.Name == "NewBogFile" {
 					file, err = createBogFile(callExpr.Args)

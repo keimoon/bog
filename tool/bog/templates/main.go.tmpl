@@ -23,6 +23,7 @@ var {{.VarName}} = bog.NewBogFile({{printf "%#v" .Data}}, &bog.FileInfo{
 {{end}}
 {{end}}
 
+// {{.VarName}} is archived variable for '{{.Root}}'
 var {{.VarName}} = bog.NewArchive(map[string]bog.File{
 	{{range .Files}}{{printf "%#v" .Path}}: {{.VarName}},
 	{{end}}

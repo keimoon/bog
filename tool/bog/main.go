@@ -7,6 +7,7 @@ import (
 	"flag"
 )
 
+// Options for archive command
 var Options = &struct {
 	PackageName string
 	Dev         bool
@@ -14,8 +15,12 @@ var Options = &struct {
 }{
 	isCwd: true,
 }
+
+// Args is argument list
 var Args = []string{}
 
+
+// Usage for flag
 func Usage() {
 	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, "%s [flags] (archive|a) folder\n", os.Args[0])

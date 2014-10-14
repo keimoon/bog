@@ -20,7 +20,7 @@ func makeFilename(name string) string {
 var underscoreRegex = regexp.MustCompile("\\_+")
 
 func makeVariableName(name string) string {
-	return "v_" + underscoreRegex.ReplaceAllString(filenameRegex.ReplaceAllString(strings.ToLower(name), "_"), "_")
+	return "vvv" + makePublicVariableName(underscoreRegex.ReplaceAllString(filenameRegex.ReplaceAllString(strings.ToLower(name), "_"), "_"))
 }
 
 var slugRegex = regexp.MustCompile("(\\s|-|_)+")

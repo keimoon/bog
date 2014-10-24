@@ -38,17 +38,15 @@ func Archive() int {
 	outputFolder := "."
 	if !Options.isCwd && Options.PackageName != "main" {
 		outputFolder = Options.PackageName
-		err = os.RemoveAll(outputFolder)
 		if err != nil {
 			fmt.Println(err)
 			return 1
 		}
-	} else {
-		err = os.RemoveAll(outputFileName)
-		if err != nil {
-			fmt.Println(err)
-			return 1
-		}
+	}
+	err = os.RemoveAll(outputFileName)
+	if err != nil {
+		fmt.Println(err)
+		return 1
 	}
 	fileVars := []*FileVar{}
 	now := strconv.FormatInt(time.Now().Unix(), 10)
